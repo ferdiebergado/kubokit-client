@@ -1,18 +1,21 @@
-type User = {
-	id: string;
+export type User = {
 	email: string;
-};
-
-type AuthState = {
 	isAuthenticated: boolean;
-	user?: User;
-	error?: Error;
-	isLoading: boolean;
 };
 
-const initialAuth: AuthState = {
-	isAuthenticated: false,
-	isLoading: true
+const initialState: User = {
+	email: '',
+	isAuthenticated: false
 };
 
-export const authState = $state(initialAuth);
+export const user = $state(initialState);
+
+let targetURL = $state('');
+
+export function getTargetURL(): string {
+	return targetURL;
+}
+
+export function setTargetURL(url: string): void {
+	targetURL = url;
+}
