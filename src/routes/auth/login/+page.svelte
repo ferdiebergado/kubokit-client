@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { intendedURL, tokenMgr } from '$lib/auth';
+	import { tokenMgr } from '$lib/auth';
 	import { Alert, SubmitButton } from '$lib/components';
-	import { get } from 'svelte/store';
-	import { authState } from '../../state.svelte';
+	import { getTargetURL, user } from '../../state.svelte';
 
 	type FormData = {
 		email: string;
@@ -32,7 +31,7 @@
 	let alertMsg = $state('');
 	let alertClass = $state('');
 
-	async function loginUser() {
+	async function loginUser(): Promise<void> {
 		try {
 			isSubmitting = true;
 
@@ -60,13 +59,14 @@
 				}
 			} else {
 				alertClass = 'success';
-				tokenMgr.setToken(data.data.access_token);
-				authState.isAuthenticated = true;
-				authState.isLoading = false;
+				const { access_token, expires_in } = data.data;
+				tokenMgr.setToken(access_token);
+				tokenMgr.setTokenExpiry(expires_in);
+				user.isAuthenticated = true;
+				user.email = formData.email;
 
-				const redirectURL = get(intendedURL) || '/';
-				intendedURL.set('');
-				await goto(redirectURL);
+				const targetURL = getTargetURL();
+				await goto(targetURL);
 			}
 		} catch (error) {
 			console.error(error);
