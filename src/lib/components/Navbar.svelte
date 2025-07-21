@@ -1,24 +1,27 @@
 <script>
 	import { page } from '$app/state';
-	import { authState } from '../../routes/state.svelte';
+	import { user } from '../../routes/state.svelte';
 
 	let currentPath = $derived(page.url.pathname);
 </script>
 
 <nav>
-	<div class="left-item">
+	<div class="left-items">
 		<a href="/" class={currentPath == '/' ? 'active' : ''}>Home</a>
-		{#if authState.isAuthenticated}
+		{#if user.isAuthenticated}
 			<a
-				data-sveltekit-preload-data={authState.isAuthenticated ? 'hover' : false}
+				data-sveltekit-preload-data={user.isAuthenticated ? 'hover' : false}
 				href="/users"
 				class={currentPath == '/users' ? 'active' : ''}>Users</a
 			>
 		{/if}
 	</div>
-	<div class="right-item">
-		{#if authState.isAuthenticated}
-			<a data-sveltekit-preload-data="false" href="/auth/logout">Logout</a>
+	<div class="right-items">
+		{#if user.isAuthenticated}
+			<span>Logged in as {user.email}</span><a
+				data-sveltekit-preload-data="false"
+				href="/auth/logout">Logout</a
+			>
 		{:else}
 			<a href="/auth/register" class={currentPath == '/auth/register' ? 'active' : ''}>Register</a>
 			<a
@@ -42,26 +45,24 @@
 
 	a {
 		color: black;
-		text-decoration: none;
 		margin: 0.6rem;
 		padding: 0.75rem 1rem;
 		border-radius: 0.3rem;
 	}
 
-	a:hover:not(.active) {
-		background-color: lightgrey;
-	}
-
 	.active {
-		background-color: slategrey;
-		color: white;
+		font-weight: bold;
 	}
 
-	.left-item {
+	.left-items {
 		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
-	.right-item {
+	.right-items {
 		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 </style>
