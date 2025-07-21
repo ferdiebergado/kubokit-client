@@ -1,14 +1,11 @@
 import { browser } from '$app/environment';
-import { goto } from '$app/navigation';
-import { authState } from '../../state.svelte';
+import { redirect } from '@sveltejs/kit';
+import { user } from '../../state.svelte';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
-	if (browser) {
-		if (authState.isAuthenticated) {
-			await goto('/');
-			return {};
-		}
+	if (browser && user.isAuthenticated) {
+		throw redirect(302, '/');
 	}
 
 	return {};

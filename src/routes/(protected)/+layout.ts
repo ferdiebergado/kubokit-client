@@ -1,16 +1,13 @@
 import { browser } from '$app/environment';
-import { goto } from '$app/navigation';
-import { intendedURL } from '$lib/auth';
-import { authState } from '../state.svelte';
+import { redirect } from '@sveltejs/kit';
+import { setTargetURL, user } from '../state.svelte';
 import type { LayoutLoad } from './$types';
 
 export const load = (async ({ url }) => {
-	if (browser) {
-		if (!authState.isAuthenticated) {
-			intendedURL.set(url.pathname + url.search);
-			await goto('/auth/login');
-			return {};
-		}
+	if (browser && !user.isAuthenticated) {
+		const currentPath = url.pathname + url.search;
+		setTargetURL(currentPath);
+		throw redirect(302, '/auth/login');
 	}
 	return {};
 }) satisfies LayoutLoad;

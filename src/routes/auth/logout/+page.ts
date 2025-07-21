@@ -1,11 +1,8 @@
-import { goto } from '$app/navigation';
 import { tokenMgr } from '$lib/auth';
-import { authState } from '../../state.svelte';
+import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
-	tokenMgr.setToken('');
-	authState.isAuthenticated = false;
-	await goto('/');
-	return {};
+	tokenMgr.reset();
+	throw redirect(302, '/');
 }) satisfies PageLoad;
