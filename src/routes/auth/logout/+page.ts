@@ -1,8 +1,9 @@
-import { redirect } from '@sveltejs/kit';
+import { authClient } from '../../state.svelte';
 import type { PageLoad } from './$types';
-import { authClient } from '$lib/stores';
+import { redirect } from '@sveltejs/kit';
 
 export const load = (async () => {
 	authClient.clearSession();
-	throw redirect(302, '/');
+	console.log('User logged out. Redirecting to home page...');
+	throw redirect(303, '/');
 }) satisfies PageLoad;

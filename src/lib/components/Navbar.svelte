@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/state';
-	import { isAuthenticated, user } from '$lib/stores';
+	import { isLoggedIn, getUser } from '../../routes/state.svelte';
 
 	let currentPath = $derived(page.url.pathname);
 </script>
@@ -8,17 +8,17 @@
 <nav>
 	<div>
 		<a href="/" class={currentPath == '/' ? 'active' : ''}>Home</a>
-		{#if $isAuthenticated}
+		{#if isLoggedIn()}
 			<a
-				data-sveltekit-preload-data={$isAuthenticated ? 'hover' : false}
+				data-sveltekit-preload-data={isLoggedIn() ? 'hover' : false}
 				href="/users"
 				class={currentPath == '/users' ? 'active' : ''}>Users</a
 			>
 		{/if}
 	</div>
 	<div>
-		{#if $isAuthenticated}
-			<span>Logged in as {$user?.email}</span><a
+		{#if isLoggedIn()}
+			<span>Logged in as {getUser()?.email}</span><a
 				data-sveltekit-preload-data="false"
 				href="/auth/logout">Logout</a
 			>

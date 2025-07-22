@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { Alert, SubmitButton } from '$lib/components';
-	import { authClient, targetURL, user } from '$lib/stores';
+	import { authClient, setUser, targetURL } from '../../state.svelte';
 
 	type FormData = {
 		email: string;
@@ -61,11 +61,12 @@
 				const { access_token, expires_in } = data.data;
 				authClient.setToken(access_token);
 				authClient.setTokenExpiry(expires_in);
-				$user = {
-					email: formData.email
-				};
+				setUser({ email: formData.email });
 
-				await goto($targetURL);
+				const redirectURL = targetURL.path;
+				console.log('targeturl', redirectURL);
+				targetURL.path = '/';
+				await goto(redirectURL);
 			}
 		} catch (error) {
 			console.error(error);
