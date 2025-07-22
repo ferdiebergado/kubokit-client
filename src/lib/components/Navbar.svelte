@@ -1,24 +1,24 @@
 <script>
 	import { page } from '$app/state';
-	import { user } from '../../routes/state.svelte';
+	import { isAuthenticated, user } from '$lib/stores';
 
 	let currentPath = $derived(page.url.pathname);
 </script>
 
 <nav>
-	<div class="left-items">
+	<div>
 		<a href="/" class={currentPath == '/' ? 'active' : ''}>Home</a>
-		{#if user.isAuthenticated}
+		{#if $isAuthenticated}
 			<a
-				data-sveltekit-preload-data={user.isAuthenticated ? 'hover' : false}
+				data-sveltekit-preload-data={$isAuthenticated ? 'hover' : false}
 				href="/users"
 				class={currentPath == '/users' ? 'active' : ''}>Users</a
 			>
 		{/if}
 	</div>
-	<div class="right-items">
-		{#if user.isAuthenticated}
-			<span>Logged in as {user.email}</span><a
+	<div>
+		{#if $isAuthenticated}
+			<span>Logged in as {$user?.email}</span><a
 				data-sveltekit-preload-data="false"
 				href="/auth/logout">Logout</a
 			>
@@ -37,10 +37,17 @@
 	nav {
 		display: flex;
 		justify-content: space-between;
+		align-items: center;
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 		width: 100%;
 		overflow: hidden;
 		margin-bottom: 3rem;
+	}
+
+	nav > div {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	a {
@@ -52,17 +59,5 @@
 
 	.active {
 		font-weight: bold;
-	}
-
-	.left-items {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.right-items {
-		display: flex;
-		align-items: center;
-		justify-content: center;
 	}
 </style>

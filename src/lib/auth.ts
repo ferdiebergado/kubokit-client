@@ -1,38 +1,35 @@
-import { user, type User } from '../routes/state.svelte';
+import { redirect } from '@sveltejs/kit';
+import type { Writable } from 'svelte/store';
+import { type User } from './stores';
 
-type TokenExpiry = number | undefined;
-
-export class TokenManager {
+export class AuthClient {
 	readonly #originalFetch = window.fetch;
 	readonly #authOrigins = ['http://localhost:8888'];
-	#token = '';
-	#tokenExpiry: TokenExpiry;
+	#token?: string;
+	#tokenExpiry?: number;
 
-	constructor(protected user: User) {}
+	constructor(private user: Writable<User | undefined>) {}
 
-	setToken(token: string): void {
+	setToken(token: string | undefined): void {
 		this.#token = token;
 	}
 
-	setTokenExpiry(expiry: TokenExpiry): void {
+	setTokenExpiry(expiry: number | undefined): void {
 		this.#tokenExpiry = expiry;
 	}
 
 	async fetch(resource: RequestInfo | URL, options?: RequestInit): Promise<Response> {
-		if (!this.#token) {
-			throw Error('token not set');
-		}
-
-		if (!this.#tokenExpiry) {
-			throw Error('token expiry not set');
+		if (!this.#token || !this.#tokenExpiry) {
+			console.error('token/token expiry not set');
+			throw redirect(302, '/auth/login');
 		}
 
 		const now = Date.now();
 		const expiry = now + this.#tokenExpiry / 1000000;
 
 		if (now >= expiry) {
-			this.reset();
-			throw Error('token expired.');
+			console.error('token expired.');
+			throw redirect(302, '/auth/login');
 		}
 
 		try {
@@ -51,12 +48,9 @@ export class TokenManager {
 		}
 	}
 
-	reset(): void {
-		this.setToken('');
+	clearSession(): void {
+		this.setToken(undefined);
 		this.setTokenExpiry(undefined);
-		this.user.isAuthenticated = false;
-		this.user.email = '';
+		this.user.set(undefined);
 	}
 }
-
-export const tokenMgr = new TokenManager(user);

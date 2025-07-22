@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { tokenMgr } from '$lib/auth';
 	import { Alert, SubmitButton } from '$lib/components';
-	import { getTargetURL, user } from '../../state.svelte';
+	import { authClient, targetURL, user } from '$lib/stores';
 
 	type FormData = {
 		email: string;
@@ -60,13 +59,13 @@
 			} else {
 				alertClass = 'success';
 				const { access_token, expires_in } = data.data;
-				tokenMgr.setToken(access_token);
-				tokenMgr.setTokenExpiry(expires_in);
-				user.isAuthenticated = true;
-				user.email = formData.email;
+				authClient.setToken(access_token);
+				authClient.setTokenExpiry(expires_in);
+				$user = {
+					email: formData.email
+				};
 
-				const targetURL = getTargetURL();
-				await goto(targetURL);
+				await goto($targetURL);
 			}
 		} catch (error) {
 			console.error(error);
