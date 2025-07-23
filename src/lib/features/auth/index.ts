@@ -16,7 +16,7 @@ export type AuthClientContext = {
 	originalFetch: typeof window.fetch;
 	api: string;
 	routes: typeof routes;
-	redirectFn: (path: string) => never;
+	redirectFn: (path: string) => Promise<void>;
 	setUser: (user?: User) => void;
 };
 
@@ -33,11 +33,12 @@ export class AuthClient {
 		this.#data = data;
 	}
 
-	async fetch(resource: RequestInfo | URL, options?: RequestInit): Promise<Response> {
+	async fetch(resource: RequestInfo | URL, options?: RequestInit): Promise<Response | undefined> {
 		if (!this.#data) {
 			console.log('Not logged in.');
 			const { redirectFn } = this.context;
-			throw redirectFn(this.#redirectPath);
+			await redirectFn(this.#redirectPath);
+			return;
 		}
 
 		if (this.#isSessionExpired()) {
@@ -72,7 +73,7 @@ export class AuthClient {
 			headers.set('Authorization', `${token_type} ${access_token}`);
 			return new Request(req, { headers });
 		}
-		return req;
+		throw new Error('unknown origin');
 	}
 
 	async #renewSession(): Promise<void> {
@@ -94,7 +95,8 @@ export class AuthClient {
 			}
 			this.clearSession();
 
-			throw redirectFn(this.#redirectPath);
+			await redirectFn(this.#redirectPath);
+			return;
 		}
 
 		const { data }: APIResponse<AuthData, undefined> = await res.json();
