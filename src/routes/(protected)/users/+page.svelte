@@ -16,18 +16,16 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#if data.users.length == 0}
-			<tr><td colspan="4">No data</td></tr>
+		{#each data.users as user (user.id)}
+			<tr>
+				<td>{user.id}</td>
+				<td>{user.email}</td>
+				<td>{user.created_at}</td>
+				<td>{user.updated_at}</td>
+			</tr>
 		{:else}
-			{#each data.users as user}
-				<tr>
-					<td>{user.id}</td>
-					<td>{user.email}</td>
-					<td>{user.created_at}</td>
-					<td>{user.updated_at}</td>
-				</tr>
-			{/each}
-		{/if}
+			<tr><td colspan="4">No data.</td></tr>
+		{/each}
 	</tbody>
 </table>
 
