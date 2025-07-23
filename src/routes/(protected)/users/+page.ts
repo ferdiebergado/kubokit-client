@@ -1,4 +1,5 @@
-import type { APIResponse, Users } from '$lib/@types';
+import type { APIResponse } from '$lib';
+import type { Users } from '$lib/features/users';
 import { authClient } from '../../state.svelte';
 import type { PageLoad } from './$types';
 

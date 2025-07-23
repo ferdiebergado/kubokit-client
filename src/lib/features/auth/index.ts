@@ -1,4 +1,4 @@
-import type { APIResponse } from './@types';
+import type { APIResponse } from '$lib';
 
 export type User = {
 	email: string;
@@ -11,17 +11,19 @@ export type AuthData = {
 	token_type: string;
 };
 
+export type AuthClientContext = {
+	originalFetch: typeof window.fetch;
+	api: string;
+	routes: Record<string, string>;
+	redirectFn: () => never;
+	setUser: (user?: User) => void;
+};
+
 export class AuthClient {
 	#data?: AuthData;
 	#renewPromise?: Promise<void>;
 
-	constructor(
-		private readonly originalFetch: typeof window.fetch,
-		private readonly api: string,
-		private readonly routes: Record<string, string>,
-		private readonly redirectFn: () => never,
-		private readonly setUser: (user?: User) => void
-	) {}
+	constructor(private readonly context: AuthClientContext) {}
 
 	setData(data?: AuthData): void {
 		this.#data = data;
@@ -30,7 +32,7 @@ export class AuthClient {
 	async fetch(resource: RequestInfo | URL, options?: RequestInit): Promise<Response> {
 		if (!this.#data) {
 			console.log('Not logged in.');
-			throw this.redirectFn();
+			throw this.context.redirectFn();
 		}
 
 		if (this.#isSessionExpired()) {
@@ -45,7 +47,7 @@ export class AuthClient {
 
 		try {
 			const req = this.#buildRequest(resource, options);
-			return await this.originalFetch(req);
+			return await this.context.originalFetch(req);
 		} catch (error) {
 			console.error('Authenticated fetch error:', error);
 			throw error;
@@ -59,7 +61,7 @@ export class AuthClient {
 	#buildRequest(resource: RequestInfo | URL, options?: RequestInit): Request {
 		const req = new Request(resource, options);
 		const { origin } = new URL(req.url);
-		if (origin === this.api) {
+		if (origin === this.context.api) {
 			const headers = new Headers(req.headers);
 			const { token_type, access_token } = this.#data!;
 			headers.set('Authorization', `${token_type} ${access_token}`);
@@ -72,7 +74,8 @@ export class AuthClient {
 		console.log('Renewing session...');
 
 		const { token_type, refresh_token } = this.#data!;
-		const res = await this.originalFetch(this.api + this.routes.refresh, {
+		const { api, routes, redirectFn } = this.context;
+		const res = await this.context.originalFetch(api + routes.refresh, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -85,7 +88,7 @@ export class AuthClient {
 				console.log('Session expired.');
 			}
 			this.clearSession();
-			throw this.redirectFn();
+			throw redirectFn();
 		}
 
 		const { data }: APIResponse<AuthData, undefined> = await res.json();
@@ -97,7 +100,7 @@ export class AuthClient {
 
 	clearSession(): void {
 		this.setData(undefined);
-		this.setUser(undefined);
+		this.context.setUser(undefined);
 		console.log('Logged out.');
 	}
 }

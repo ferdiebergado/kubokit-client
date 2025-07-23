@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { api } from '$lib';
-	import type { APIResponse } from '$lib/@types';
-	import type { AuthData } from '$lib/auth';
+	import { api, type APIResponse } from '$lib';
+	import type { AuthData } from '$lib/features/auth';
 	import { Alert, SubmitButton } from '$lib/components';
 	import { routes } from '$lib/routes';
-	import { authClient, setUser, targetURL } from '../../state.svelte';
+	import { authClient, originalFetch, setUser, targetURL } from '../../state.svelte';
 
 	type FormData = {
 		email: string;
@@ -38,7 +37,7 @@
 		try {
 			isSubmitting = true;
 
-			const res = await fetch(api + routes.login, {
+			const res = await originalFetch(api + routes.login, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

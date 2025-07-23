@@ -1,5 +1,5 @@
 import { api } from '$lib';
-import { AuthClient, type User } from '$lib/auth';
+import { AuthClient, type AuthClientContext, type User } from '$lib/features/auth';
 import { routes } from '$lib/routes';
 import { redirect } from '@sveltejs/kit';
 
@@ -25,6 +25,14 @@ function redirectToLogin(): never {
 
 export const originalFetch = window.fetch;
 
-export const authClient = new AuthClient(originalFetch, api, routes, redirectToLogin, setUser);
+const ctx: AuthClientContext = {
+	originalFetch,
+	api,
+	routes,
+	redirectFn: redirectToLogin,
+	setUser
+};
+
+export const authClient = new AuthClient(ctx);
 
 export const targetURL = { path: '/' };

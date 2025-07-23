@@ -1,9 +1,3 @@
-export type APIResponse<T, E> = {
-	message: string;
-	data?: T;
-	errors?: E;
-};
-
 export type UserData = {
 	id: string;
 	email: string;
