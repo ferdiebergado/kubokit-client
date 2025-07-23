@@ -19,8 +19,8 @@ export function isLoggedIn(): boolean {
 	return loggedIn;
 }
 
-function redirectToLogin(): never {
-	throw redirect(303, routes.login);
+function redirectToLogin(path: string): never {
+	throw redirect(303, path);
 }
 
 export const originalFetch = window.fetch;
