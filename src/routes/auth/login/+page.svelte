@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { api } from '$lib';
+	import type { APIResponse } from '$lib/@types';
+	import type { AuthData } from '$lib/auth';
 	import { Alert, SubmitButton } from '$lib/components';
+	import { routes } from '$lib/routes';
 	import { authClient, setUser, targetURL } from '../../state.svelte';
 
 	type FormData = {
@@ -34,7 +38,7 @@
 		try {
 			isSubmitting = true;
 
-			const res = await fetch('http://127.0.0.1:8888/auth/login', {
+			const res = await fetch(api + routes.login, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -45,29 +49,29 @@
 				})
 			});
 
-			const data = await res.json();
+			const payload: APIResponse<AuthData, FormErrors> = await res.json();
+			console.log(payload);
 
-			console.log(data);
-
-			alertMsg = data.message;
+			const { message, data, errors } = payload;
 
 			if (!res.ok) {
 				alertClass = 'error';
-				if (data.errors) {
-					formErrors = data.errors;
+				if (errors) {
+					formErrors = errors;
 				}
 			} else {
 				alertClass = 'success';
-				const { access_token, expires_in } = data.data;
-				authClient.setToken(access_token);
-				authClient.setTokenExpiry(expires_in);
-				setUser({ email: formData.email });
+				if (data) {
+					authClient.setData(data);
+					setUser({ email: formData.email });
 
-				const redirectURL = targetURL.path;
-				console.log('targeturl', redirectURL);
-				targetURL.path = '/';
-				await goto(redirectURL);
+					const redirectURL = targetURL.path;
+					targetURL.path = '/';
+					await goto(redirectURL);
+				}
 			}
+
+			alertMsg = message;
 		} catch (error) {
 			console.error(error);
 			alertClass = 'error';

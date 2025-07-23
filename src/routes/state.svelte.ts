@@ -1,12 +1,15 @@
+import { api } from '$lib';
 import { AuthClient, type User } from '$lib/auth';
+import { routes } from '$lib/routes';
+import { redirect } from '@sveltejs/kit';
 
-let user = $state<User | undefined>();
+let user: User | undefined = $state();
 
 export function getUser() {
 	return user;
 }
 
-export function setUser(newUser: User | undefined): void {
+export function setUser(newUser?: User): void {
 	user = newUser;
 }
 
@@ -16,10 +19,12 @@ export function isLoggedIn(): boolean {
 	return loggedIn;
 }
 
-export const authClient = new AuthClient(setUser);
+function redirectToLogin(): never {
+	throw redirect(303, routes.login);
+}
 
-type TargetURL = {
-	path: string;
-};
+export const originalFetch = window.fetch;
 
-export const targetURL: TargetURL = { path: '/' };
+export const authClient = new AuthClient(originalFetch, api, routes, redirectToLogin, setUser);
+
+export const targetURL = { path: '/' };
