@@ -16,15 +16,18 @@ export type AuthClientContext = {
 	originalFetch: typeof window.fetch;
 	api: string;
 	routes: typeof routes;
-	redirectFn: () => never;
+	redirectFn: (path: string) => never;
 	setUser: (user?: User) => void;
 };
 
 export class AuthClient {
 	#data?: AuthData;
+	#redirectPath: string;
 	#renewPromise?: Promise<void>;
 
-	constructor(private readonly context: AuthClientContext) {}
+	constructor(private readonly context: AuthClientContext) {
+		this.#redirectPath = context.routes.login;
+	}
 
 	setData(data?: AuthData): void {
 		this.#data = data;
@@ -33,7 +36,8 @@ export class AuthClient {
 	async fetch(resource: RequestInfo | URL, options?: RequestInit): Promise<Response> {
 		if (!this.#data) {
 			console.log('Not logged in.');
-			throw this.context.redirectFn();
+			const { redirectFn } = this.context;
+			throw redirectFn(this.#redirectPath);
 		}
 
 		if (this.#isSessionExpired()) {
@@ -89,7 +93,8 @@ export class AuthClient {
 				console.log('Session expired.');
 			}
 			this.clearSession();
-			throw redirectFn();
+
+			throw redirectFn(this.#redirectPath);
 		}
 
 		const { data }: APIResponse<AuthData, undefined> = await res.json();
