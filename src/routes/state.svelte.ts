@@ -2,6 +2,7 @@ import { goto } from '$app/navigation';
 import { api } from '$lib';
 import { AuthClient, type AuthClientContext, type User } from '$lib/features/auth';
 import { routes } from '$lib/routes';
+import { redirect } from '@sveltejs/kit';
 
 let user: User | undefined = $state();
 
@@ -20,7 +21,10 @@ export function isLoggedIn(): boolean {
 }
 
 async function redirectTo(path: string): Promise<void> {
-	await goto(path);
+	if (typeof window === 'undefined') {
+		throw redirect(303, path);
+	}
+	return await goto(path);
 }
 
 export const originalFetch = window.fetch;
