@@ -1,4 +1,5 @@
-import type { APIResponse } from '$lib';
+import { type APIResponse } from '$lib';
+import type { routes } from '$lib/routes';
 
 export type User = {
 	email: string;
@@ -14,7 +15,7 @@ export type AuthData = {
 export type AuthClientContext = {
 	originalFetch: typeof window.fetch;
 	api: string;
-	routes: Record<string, string>;
+	routes: typeof routes;
 	redirectFn: () => never;
 	setUser: (user?: User) => void;
 };
