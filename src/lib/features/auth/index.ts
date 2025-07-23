@@ -47,8 +47,9 @@ export class AuthClient {
 				this.#renewPromise = this.#renewSession().finally(() => {
 					this.#renewPromise = undefined;
 				});
+			} else {
+				await this.#renewSession();
 			}
-			await this.#renewSession();
 		}
 
 		try {
