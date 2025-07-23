@@ -1,4 +1,4 @@
-import type { UsersResponse } from '$lib/users';
+import type { APIResponse, Users } from '$lib/@types';
 import { authClient } from '../../state.svelte';
 import type { PageLoad } from './$types';
 
@@ -6,9 +6,15 @@ export const load = (async ({ parent }) => {
 	await parent();
 
 	const res = await authClient.fetch('http://localhost:8888/users');
-	const data: UsersResponse = await res.json();
+	const { data }: APIResponse<Users, undefined> = await res.json();
+
+	if (data) {
+		return {
+			users: data.users
+		};
+	}
 
 	return {
-		users: data.data.users
+		users: []
 	};
 }) satisfies PageLoad;
