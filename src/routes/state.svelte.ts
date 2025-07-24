@@ -4,17 +4,22 @@ import { AuthClient, type AuthClientContext, type User } from '$lib/features/aut
 import { routes } from '$lib/routes';
 import { redirect } from '@sveltejs/kit';
 
+console.log('Loading state...');
+
 let user: User | undefined = $state();
+const loggedIn = $derived(!!user);
 
 export function getUser() {
 	return user;
 }
 
-export function setUser(newUser?: User): void {
+export function setUser(newUser: User): void {
 	user = newUser;
 }
 
-const loggedIn = $derived(!!user);
+export function clearUser(): void {
+	user = undefined;
+}
 
 export function isLoggedIn(): boolean {
 	return loggedIn;
@@ -29,14 +34,16 @@ async function redirectTo(path: string): Promise<void> {
 
 export const originalFetch = window.fetch;
 
-const ctx: AuthClientContext = {
+const ctx: AuthClientContext = Object.freeze({
 	originalFetch,
 	api,
 	routes,
 	redirectFn: redirectTo,
-	setUser
-};
+	clearUser
+});
 
 export const authClient = new AuthClient(ctx);
 
-export const targetURL = { path: '/' };
+export const intendedURL = { path: '/' };
+
+console.log('State loaded.');

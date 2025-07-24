@@ -17,39 +17,34 @@ export type AuthClientContext = {
 	api: string;
 	routes: typeof routes;
 	redirectFn: (path: string) => Promise<void>;
-	setUser: (user?: User) => void;
+	clearUser: () => void;
 };
 
 export class AuthClient {
+	readonly #redirectPath: string;
 	#data?: AuthData;
-	#redirectPath: string;
 	#renewPromise?: Promise<void>;
 
 	constructor(private readonly context: AuthClientContext) {
-		this.#redirectPath = context.routes.login;
+		console.log('Auth client initializing...');
+		const { routes } = context;
+		this.#redirectPath = routes.login;
 	}
 
-	setData(data?: AuthData): void {
+	setData(data: AuthData): void {
 		this.#data = data;
 	}
 
 	async fetch(resource: RequestInfo | URL, options?: RequestInit): Promise<Response | undefined> {
 		if (!this.#data) {
 			console.log('Not logged in.');
-			const { redirectFn } = this.context;
-			await redirectFn(this.#redirectPath);
+			await this.#redirect();
 			return;
 		}
 
 		if (this.#isSessionExpired()) {
 			console.log('Session has expired.');
-			if (!this.#renewPromise) {
-				this.#renewPromise = this.#renewSession().finally(() => {
-					this.#renewPromise = undefined;
-				});
-			} else {
-				await this.#renewSession();
-			}
+			await this.#renewSession();
 		}
 
 		try {
@@ -78,10 +73,22 @@ export class AuthClient {
 	}
 
 	async #renewSession(): Promise<void> {
-		console.log('Renewing session...');
+		if (this.#renewPromise) {
+			console.log('Session renewal already in progress. Awaiting existing promise.');
+			return this.#renewPromise;
+		}
 
+		this.#renewPromise = this.#fetchNewToken().finally(() => {
+			console.log('Session renewal promise settled, clearing.');
+			this.#renewPromise = undefined;
+		});
+
+		return this.#renewPromise;
+	}
+
+	async #fetchNewToken(): Promise<void> {
 		const { token_type, refresh_token } = this.#data!;
-		const { api, routes, redirectFn } = this.context;
+		const { api, routes } = this.context;
 		const res = await this.context.originalFetch(api + routes.refresh, {
 			method: 'POST',
 			headers: {
@@ -95,21 +102,29 @@ export class AuthClient {
 				console.log('Session expired.');
 			}
 			this.clearSession();
-
-			await redirectFn(this.#redirectPath);
-			return;
+			await this.#redirect();
+			const data: APIResponse<undefined, undefined> = await res.json();
+			const { message } = data;
+			throw new Error(message);
 		}
 
 		const { data }: APIResponse<AuthData, undefined> = await res.json();
 		if (data) {
 			this.#data = data;
-			console.log('Session renewed.');
 		}
 	}
 
+	async #redirect(): Promise<void> {
+		await this.context.redirectFn(this.#redirectPath);
+	}
+
+	#clearData(): void {
+		this.#data = undefined;
+	}
+
 	clearSession(): void {
-		this.setData(undefined);
-		this.context.setUser(undefined);
+		this.#clearData();
+		this.context.clearUser();
 		console.log('Logged out.');
 	}
 }
