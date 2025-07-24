@@ -1,34 +1,32 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/state';
+	import { routes } from '$lib/routes';
 	import { isLoggedIn, getUser } from '../../routes/state.svelte';
 
+	const { register, login, logout, users } = routes;
 	let currentPath = $derived(page.url.pathname);
 </script>
 
+{#snippet navLink(text: string, path: string)}
+	<a href={path} class={currentPath === path ? 'active' : ''} data-sveltekit-preload-data="false"
+		>{text}</a
+	>
+{/snippet}
+
 <nav>
 	<div>
-		<a href="/" class={currentPath == '/' ? 'active' : ''}>Home</a>
+		{@render navLink('Home', '/')}
 		{#if isLoggedIn()}
-			<a
-				data-sveltekit-preload-data={isLoggedIn() ? 'hover' : false}
-				href="/users"
-				class={currentPath == '/users' ? 'active' : ''}>Users</a
-			>
+			{@render navLink('Users', users)}
 		{/if}
 	</div>
 	<div>
 		{#if isLoggedIn()}
-			<span>Logged in as {getUser()?.email}</span><a
-				data-sveltekit-preload-data="false"
-				href="/auth/logout">Logout</a
-			>
+			<span>Logged in as {getUser()?.email}</span>
+			{@render navLink('Logout', logout)}
 		{:else}
-			<a href="/auth/register" class={currentPath == '/auth/register' ? 'active' : ''}>Register</a>
-			<a
-				data-sveltekit-preload-data="false"
-				href="/auth/login"
-				class={currentPath == '/auth/login' ? 'active' : ''}>Login</a
-			>
+			{@render navLink('Register', register)}
+			{@render navLink('Login', login)}
 		{/if}
 	</div>
 </nav>
