@@ -5,6 +5,10 @@ export type User = {
 	email: string;
 };
 
+export type UserVerification = {
+	token: string;
+};
+
 export type AuthData = {
 	access_token: string;
 	refresh_token: string;

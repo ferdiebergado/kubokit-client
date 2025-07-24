@@ -46,4 +46,14 @@ export const authClient = new AuthClient(ctx);
 
 export const intendedURL = { path: '/' };
 
+let notVerified = $state(false);
+
+export function isNotVerified(): boolean {
+	return notVerified;
+}
+
+export function setNotVerified(status: boolean): void {
+	notVerified = status;
+}
+
 console.log('State loaded.');

@@ -32,6 +32,7 @@
 	let isSubmitting = $state(false);
 	let alertMsg = $state('');
 	let alertClass = $state('');
+	let isVerified = $state(false);
 
 	async function loginUser(): Promise<void> {
 		try {
@@ -53,24 +54,28 @@
 
 			const { message, data, errors } = payload;
 
+			alertMsg = message;
+
 			if (!res.ok) {
 				alertClass = 'error';
 				if (errors) {
 					formErrors = errors;
+					const { error_code } = errors;
+					if (error_code && error_code === 'ACCOUNT_NOT_VERIFIED') {
+						isVerified = false;
+					}
 				}
 			} else {
 				alertClass = 'success';
 				if (data) {
 					authClient.setData(data);
 					setUser({ email: formData.email });
-
+					isVerified = true;
 					const redirectURL = intendedURL.path;
 					intendedURL.path = '/';
 					await goto(redirectURL);
 				}
 			}
-
-			alertMsg = message;
 		} catch (error) {
 			console.error(error);
 			alertClass = 'error';
@@ -83,6 +88,11 @@
 
 {#if alertMsg}
 	<Alert message={alertMsg} cls={alertClass}></Alert>
+	{#if !isVerified}
+		<p class="info">
+			Please check your email or <a href="/auth/resend">resend</a> a verification.
+		</p>
+	{/if}
 {/if}
 
 <div class="form-wrapper">
@@ -165,8 +175,16 @@
 	}
 
 	.help-text {
-		padding-top: 0.3rem;
+		padding-top: 0.4rem;
 		font-size: medium;
 		color: red;
+	}
+
+	p {
+		margin: 1rem;
+	}
+
+	.info {
+		margin-bottom: 2rem;
 	}
 </style>
