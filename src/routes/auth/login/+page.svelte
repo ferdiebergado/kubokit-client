@@ -4,7 +4,7 @@
 	import type { AuthData } from '$lib/features/auth';
 	import { Alert, SubmitButton } from '$lib/components';
 	import { routes } from '$lib/routes';
-	import { authClient, originalFetch, setUser, targetURL } from '../../state.svelte';
+	import { authClient, originalFetch, setUser, intendedURL } from '../../state.svelte';
 
 	type FormData = {
 		email: string;
@@ -64,8 +64,8 @@
 					authClient.setData(data);
 					setUser({ email: formData.email });
 
-					const redirectURL = targetURL.path;
-					targetURL.path = '/';
+					const redirectURL = intendedURL.path;
+					intendedURL.path = '/';
 					await goto(redirectURL);
 				}
 			}
