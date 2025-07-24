@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { api, type APIResponse } from '$lib';
+	import { api, jsonFetch, originalFetch, type APIResponse } from '$lib';
 	import type { AuthData } from '$lib/features/auth';
 	import { Alert, SubmitButton } from '$lib/components';
 	import { routes } from '$lib/routes';
-	import { authClient, originalFetch, setUser, intendedURL } from '../../state.svelte';
+	import { authClient, setUser, intendedURL } from '../../state.svelte';
 
 	type FormData = {
 		email: string;
@@ -12,8 +12,8 @@
 	};
 
 	type FormErrors = {
-		email: string;
-		password: string;
+		email?: string;
+		password?: string;
 	};
 
 	const initialData: FormData = {
@@ -21,10 +21,7 @@
 		password: ''
 	};
 
-	const initialErrors: FormErrors = {
-		email: '',
-		password: ''
-	};
+	const initialErrors: FormErrors = {};
 
 	let formData = $state(initialData);
 	let formErrors = $state(initialErrors);
@@ -38,16 +35,16 @@
 		try {
 			isSubmitting = true;
 
-			const res = await originalFetch(api + routes.login, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
+			const res = await jsonFetch(
+				api + routes.login,
+				{
+					method: 'POST'
 				},
-				body: JSON.stringify({
+				{
 					email: formData.email,
 					password: formData.password
-				})
-			});
+				}
+			);
 
 			const payload: APIResponse<AuthData, FormErrors> = await res.json();
 			console.log(payload);
