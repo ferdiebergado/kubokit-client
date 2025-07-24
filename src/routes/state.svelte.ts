@@ -1,5 +1,5 @@
 import { goto } from '$app/navigation';
-import { api } from '$lib';
+import { api, originalFetch } from '$lib';
 import { AuthClient, type AuthClientContext, type User } from '$lib/features/auth';
 import { routes } from '$lib/routes';
 import { redirect } from '@sveltejs/kit';
@@ -32,8 +32,6 @@ async function redirectTo(path: string): Promise<void> {
 	return await goto(path);
 }
 
-export const originalFetch = window.fetch;
-
 const ctx: AuthClientContext = Object.freeze({
 	originalFetch,
 	api,
@@ -45,15 +43,5 @@ const ctx: AuthClientContext = Object.freeze({
 export const authClient = new AuthClient(ctx);
 
 export const intendedURL = { path: '/' };
-
-let notVerified = $state(false);
-
-export function isNotVerified(): boolean {
-	return notVerified;
-}
-
-export function setNotVerified(status: boolean): void {
-	notVerified = status;
-}
 
 console.log('State loaded.');
