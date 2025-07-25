@@ -107,6 +107,7 @@
 				class={formErrors['email'] ? 'error' : ''}
 				bind:value={formData.email}
 				required
+				autocomplete="email"
 			/>
 			{#if formErrors['email']}
 				<div class="help-text">{formErrors['email']}</div>
