@@ -7,7 +7,8 @@
 <style>
 	button {
 		width: 100%;
-		padding: 15px;
+		padding: 0.9rem;
+		margin-bottom: 1rem;
 		background-color: #007bff;
 		color: white;
 		border: none;
