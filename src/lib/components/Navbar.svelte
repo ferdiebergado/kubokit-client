@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { routes } from '$lib/routes';
-	import { isLoggedIn, getUser } from '../../routes/state.svelte';
+	import { authState } from '../../routes/state.svelte';
 
 	const { register, login, logout, users } = routes;
 	let currentPath = $derived(page.url.pathname);
+	let isLoggedIn = $derived(!!authState.user);
 </script>
 
 {#snippet navLink(text: string, path: string)}
@@ -16,13 +17,13 @@
 <nav>
 	<div>
 		{@render navLink('Home', '/')}
-		{#if isLoggedIn()}
+		{#if isLoggedIn}
 			{@render navLink('Users', users)}
 		{/if}
 	</div>
 	<div>
-		{#if isLoggedIn()}
-			<span>Logged in as {getUser()?.email}</span>
+		{#if isLoggedIn}
+			<span>Logged in as {authState.user!.email}</span>
 			{@render navLink('Logout', logout)}
 		{:else}
 			{@render navLink('Register', register)}

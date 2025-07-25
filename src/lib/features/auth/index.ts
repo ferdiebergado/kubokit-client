@@ -1,5 +1,6 @@
 import { type APIResponse } from '$lib';
 import type { routes } from '$lib/routes';
+import type { AuthState } from '../../../routes/state.svelte';
 
 /**
  * Minimal user representation.
@@ -41,8 +42,8 @@ export type AuthClientContext = {
 	/** Redirect function used to navigate to login or other pages. */
 	redirectFn: (path: string) => Promise<void>;
 
-	/** Callback to clear user state from the application (e.g., reset auth store). */
-	clearUser: () => void;
+	/** Object containing the current logged in user. */
+	authState: AuthState;
 };
 
 /**
@@ -192,7 +193,7 @@ export class AuthClient {
 	 */
 	clearSession(): void {
 		this.#clearData();
-		this.context.clearUser();
+		this.context.authState.user = undefined;
 		console.log('Logged out.');
 	}
 }

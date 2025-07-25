@@ -4,7 +4,7 @@
 	import type { AuthData } from '$lib/features/auth';
 	import { SubmitButton } from '$lib/components';
 	import { routes } from '$lib/routes';
-	import { authClient, setUser, intendedURL, appState } from '../../state.svelte';
+	import { authClient, authState, intendedURL, appState } from '../../state.svelte';
 
 	type FormData = {
 		email: string;
@@ -54,7 +54,7 @@
 				appState.success = true;
 				if (data) {
 					authClient.setData(data);
-					setUser({ email: formData.email });
+					authState.user = { email: formData.email };
 					isVerified = true;
 					const redirectURL = intendedURL.path;
 					intendedURL.path = '/';
