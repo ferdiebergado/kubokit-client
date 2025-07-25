@@ -1,5 +1,5 @@
 <script lang="ts">
-	import '../styles/global.css';
+	import '../app.css';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { appState } from './state.svelte';
 	import { Alert } from '$lib/components';
