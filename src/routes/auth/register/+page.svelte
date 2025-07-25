@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { Alert, SubmitButton } from '$lib/components';
+	import { api } from '$lib';
+	import { SubmitButton } from '$lib/components';
+	import { routes } from '$lib/routes';
+	import { appState } from '../../state.svelte';
 
 	type FormData = {
 		email: string;
@@ -7,11 +10,7 @@
 		passwordConfirm: string;
 	};
 
-	type FormErrors = {
-		email: string;
-		password: string;
-		password_confirm: string;
-	};
+	type FormErrors = Partial<Omit<FormData, 'passwordConfirm'>> & { password_confirm?: string };
 
 	const initialData: FormData = {
 		email: '',
@@ -19,64 +18,47 @@
 		passwordConfirm: ''
 	};
 
-	const initialErrors: FormErrors = {
-		email: '',
-		password: '',
-		password_confirm: ''
-	};
+	const initialErrors: FormErrors = {};
 
 	let formData = $state(initialData);
 	let formErrors = $state(initialErrors);
 	let isSubmitting = $state(false);
 
-	let alertMsg = $state('');
-	let alertClass = $state('');
-
 	async function registerUser() {
 		try {
 			isSubmitting = true;
 
-			const res = await fetch('http://127.0.0.1:8888/auth/register', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					email: formData.email,
-					password: formData.password,
-					password_confirm: formData.passwordConfirm
-				})
+			const res = await api.post(routes.register, false, {
+				email: formData.email,
+				password: formData.password,
+				password_confirm: formData.passwordConfirm
 			});
 
-			const data = await res.json();
+			const payload = await res.json();
 
-			console.log(data);
+			console.log(payload);
 
-			alertMsg = data.message;
+			appState.msg = payload.message;
 
 			if (!res.ok) {
-				alertClass = 'error';
-				if (data.errors) {
-					formErrors = data.errors;
+				appState.success = false;
+				if (payload.errors) {
+					formErrors = payload.errors;
 				}
 			} else {
-				alertClass = 'success';
+				appState.success = true;
 				formData = initialData;
 				formErrors = initialErrors;
 			}
 		} catch (error) {
 			console.error(error);
-			alertClass = 'error';
-			alertMsg = 'An unexpected error occurred.';
+			appState.msg = 'An unexpected error occurred.';
+			appState.success = false;
 		} finally {
 			isSubmitting = false;
 		}
 	}
 </script>
-
-{#if alertMsg}
-	<Alert message={alertMsg} cls={alertClass}></Alert>
-{/if}
 
 <div class="form-wrapper">
 	<h2>Register</h2>
@@ -137,6 +119,8 @@
 		text-align: center;
 		color: #333;
 		margin-bottom: 25px;
+		font-size: 1.6rem;
+		text-transform: uppercase;
 	}
 
 	.form-group {
