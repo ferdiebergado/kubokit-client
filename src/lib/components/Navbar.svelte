@@ -1,5 +1,5 @@
 <script lang="ts">
-	import logo from '../../../static/inspiration.svg';
+	import logo from '../../logo.svg';
 	import { page } from '$app/state';
 	import { routes } from '$lib/routes';
 	import { authState } from '../../routes/state.svelte';
@@ -18,7 +18,7 @@
 <header>
 	<nav>
 		<div>
-			<a class="logo" href="/">
+			<a class="logo-link" href="/">
 				<img src={logo} alt="logo" />
 			</a>
 			{#if isLoggedIn}
@@ -72,12 +72,12 @@
 		font-weight: bold;
 	}
 
-	.logo {
+	.logo-link {
 		padding: 1rem;
 		margin-inline: 1rem;
 	}
 
-	.logo img {
+	.logo-link img {
 		width: 2.5rem;
 		height: 2rem;
 	}
