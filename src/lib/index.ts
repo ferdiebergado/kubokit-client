@@ -1,13 +1,7 @@
+import { authClient, baseURL, originalFetch } from '../routes/state.svelte';
+
 // place files you want to import through the `$lib` alias in this folder.
 console.log('Loading modules...');
-
-/**
- * Base URL for the API.
- *
- * This is a constant used as the root endpoint for all API requests.
- * You can change this when switching between development and production environments.
- */
-export const api = 'http://localhost:8888' as const;
 
 /**
  * Generic shape of an API response.
@@ -30,44 +24,62 @@ export const api = 'http://localhost:8888' as const;
 export type APIResponse<T, E> = {
 	message: string;
 	data?: T;
-	errors?: E & Readonly<{ error_code?: string }>;
+	errors?: Readonly<{ error_code?: string } & E>;
 };
 
-/**
- * Stores the original `window.fetch` before any overrides.
- */
-export const originalFetch = window.fetch;
+type httpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+type RequestOpts = Omit<RequestInit, 'method' | 'body' | 'credentials'>;
 
-/**
- * Performs a `fetch` request with a JSON body and automatically sets the
- * `Content-Type` header to `application/json`.
- *
- * This utility is useful for making POST, PUT, or PATCH requests with a typed JSON payload.
- *
- * @template T - The type of the request body object.
- * @param {RequestInfo | URL} url - The URL to send the request to.
- * @param {Omit<RequestInit, 'body'>} [opts] - Optional fetch options excluding the body.
- * @param {T} [body] - Optional request body object to be serialized as JSON.
- * @returns {Promise<Response>} - A promise resolving to the `Response` object.
- *
- * @example
- * const response = await jsonFetch('/api/user', { method: 'POST' }, { name: 'Alice' });
- * const data = await response.json();
- */
-export async function jsonFetch<T extends object>(
-	url: RequestInfo | URL,
-	opts?: Omit<RequestInit, 'body'>,
-	body?: T
+export async function apiFetch<T extends object>(
+	method: httpMethod,
+	path: string,
+	isAuthorized = false,
+	body?: T,
+	opts?: RequestOpts
 ): Promise<Response> {
-	const optsWithOptionalBody: RequestInit = {
-		...opts
-	};
+	if (!path.startsWith('/')) {
+		throw new Error('Path should start with a slash (/).');
+	}
+
+	const url = baseURL + path;
+	const req = new Request(url, opts);
+	const newOpts: RequestInit = { method };
+	const headers = new Headers(req.headers);
+
+	if (method !== 'GET') {
+		headers.set('Content-Type', 'application/json');
+	}
 
 	if (body) {
-		optsWithOptionalBody.body = JSON.stringify(body);
+		newOpts['body'] = JSON.stringify(body);
 	}
-	const req = new Request(url, optsWithOptionalBody);
-	const headers = new Headers(req.headers);
-	headers.set('Content-Type', 'application/json');
-	return await originalFetch(req, { headers });
+
+	newOpts['headers'] = headers;
+
+	if (isAuthorized) {
+		return await authClient.fetch(req, newOpts);
+	}
+
+	return await originalFetch(req, newOpts);
 }
+
+export const api = {
+	get(path: string, isAuthorized = false, opts?: RequestOpts) {
+		return apiFetch('GET', path, isAuthorized, {}, opts);
+	},
+	post<T extends object>(path: string, isAuthorized = false, body?: T, opts?: RequestOpts) {
+		return apiFetch('POST', path, isAuthorized, body, opts);
+	},
+
+	put<T extends object>(path: string, isAuthorized = false, body?: T, opts?: RequestOpts) {
+		return apiFetch('PUT', path, isAuthorized, body, opts);
+	},
+
+	patch<T extends object>(path: string, isAuthorized = false, body?: T, opts?: RequestOpts) {
+		return apiFetch('PATCH', path, isAuthorized, body, opts);
+	},
+
+	delete(url: string, isAuthorized = false, opts?: RequestOpts) {
+		return apiFetch('DELETE', url, isAuthorized, {}, opts);
+	}
+};

@@ -79,11 +79,10 @@ export class AuthClient {
 	 * @param options - Optional fetch options.
 	 * @returns The response, or undefined if the user was redirected.
 	 */
-	async fetch(resource: RequestInfo | URL, options?: RequestInit): Promise<Response | undefined> {
+	async fetch(resource: RequestInfo | URL, options?: RequestInit): Promise<Response> {
 		if (!this.#data) {
-			console.log('Not logged in.');
 			await this.#redirect();
-			return;
+			throw new Error('Not logged in.');
 		}
 
 		if (this.#isSessionExpired()) {
