@@ -1,10 +1,17 @@
 import { goto } from '$app/navigation';
-import { api, originalFetch } from '$lib';
 import { AuthClient, type AuthClientContext, type User } from '$lib/features/auth';
 import { routes } from '$lib/routes';
 import { redirect } from '@sveltejs/kit';
 
 console.log('Loading state...');
+
+/**
+ * Base URL for the API.
+ *
+ * This is a constant used as the root endpoint for all API requests.
+ * You can change this when switching between development and production environments.
+ */
+export const baseURL = 'http://localhost:8888' as const;
 
 let user: User | undefined = $state();
 const loggedIn = $derived(!!user);
@@ -32,9 +39,14 @@ async function redirectTo(path: string): Promise<void> {
 	return await goto(path);
 }
 
+/**
+ * Stores the original `window.fetch` before any overrides.
+ */
+export const originalFetch = window.fetch;
+
 const ctx: AuthClientContext = Object.freeze({
 	originalFetch,
-	api,
+	api: baseURL,
 	routes,
 	redirectFn: redirectTo,
 	clearUser
@@ -43,5 +55,17 @@ const ctx: AuthClientContext = Object.freeze({
 export const authClient = new AuthClient(ctx);
 
 export const intendedURL = { path: '/' };
+
+type status = {
+	success: boolean;
+	msg: string;
+};
+
+const initialStatus: status = {
+	success: false,
+	msg: ''
+};
+
+export const appState: status = $state(initialStatus);
 
 console.log('State loaded.');
