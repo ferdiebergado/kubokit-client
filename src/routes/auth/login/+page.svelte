@@ -1,20 +1,17 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { api, jsonFetch, originalFetch, type APIResponse } from '$lib';
+	import { api, type APIResponse } from '$lib';
 	import type { AuthData } from '$lib/features/auth';
-	import { Alert, SubmitButton } from '$lib/components';
+	import { SubmitButton } from '$lib/components';
 	import { routes } from '$lib/routes';
-	import { authClient, setUser, intendedURL } from '../../state.svelte';
+	import { authClient, setUser, intendedURL, appState } from '../../state.svelte';
 
 	type FormData = {
 		email: string;
 		password: string;
 	};
 
-	type FormErrors = {
-		email?: string;
-		password?: string;
-	};
+	type FormErrors = Partial<FormData>;
 
 	const initialData: FormData = {
 		email: '',
@@ -25,36 +22,27 @@
 
 	let formData = $state(initialData);
 	let formErrors = $state(initialErrors);
-
 	let isSubmitting = $state(false);
-	let alertMsg = $state('');
-	let alertClass = $state('');
-	let isVerified = $state(false);
+	let isVerified = $state(true);
 
 	async function loginUser(): Promise<void> {
 		try {
 			isSubmitting = true;
 
-			const res = await jsonFetch(
-				api + routes.login,
-				{
-					method: 'POST'
-				},
-				{
-					email: formData.email,
-					password: formData.password
-				}
-			);
+			const res = await api.post(routes.login, false, {
+				email: formData.email,
+				password: formData.password
+			});
 
 			const payload: APIResponse<AuthData, FormErrors> = await res.json();
 			console.log(payload);
 
 			const { message, data, errors } = payload;
 
-			alertMsg = message;
+			appState.msg = message;
 
 			if (!res.ok) {
-				alertClass = 'error';
+				appState.success = false;
 				if (errors) {
 					formErrors = errors;
 					const { error_code } = errors;
@@ -63,7 +51,7 @@
 					}
 				}
 			} else {
-				alertClass = 'success';
+				appState.success = true;
 				if (data) {
 					authClient.setData(data);
 					setUser({ email: formData.email });
@@ -75,21 +63,36 @@
 			}
 		} catch (error) {
 			console.error(error);
-			alertClass = 'error';
-			alertMsg = 'An unexpected error occurred.';
+			appState.msg = 'An unexpected error occurred.';
+			appState.success = false;
 		} finally {
 			isSubmitting = false;
 		}
 	}
+
+	async function resendVerification(): Promise<void> {
+		const body = { email: formData.email };
+		const res = await api.post(routes.resendVerifyEmail, false, body);
+		const payload: APIResponse<undefined, undefined> = await res.json();
+
+		appState.msg = payload.message;
+
+		if (!res.ok) {
+			appState.success = false;
+			return;
+		}
+
+		appState.success = true;
+		isVerified = true;
+	}
 </script>
 
-{#if alertMsg}
-	<Alert message={alertMsg} cls={alertClass}></Alert>
-	{#if !isVerified}
-		<p class="info">
-			Please check your email or <a href="/auth/resend">resend</a> a verification.
-		</p>
-	{/if}
+{#if !isVerified}
+	<p class="info">
+		Please check your email or <button type="button" class="btn-resend" onclick={resendVerification}
+			>resend</button
+		> a verification.
+	</p>
 {/if}
 
 <div class="form-wrapper">
@@ -137,6 +140,8 @@
 		text-align: center;
 		color: #333;
 		margin-bottom: 25px;
+		font-size: 1.6rem;
+		text-transform: uppercase;
 	}
 
 	.form-group {
@@ -177,11 +182,15 @@
 		color: red;
 	}
 
-	p {
-		margin: 1rem;
-	}
-
 	.info {
 		margin-bottom: 2rem;
+	}
+
+	.btn-resend {
+		background-color: blue;
+		color: white;
+		padding: 0.4rem;
+		border-radius: 0.3rem;
+		cursor: pointer;
 	}
 </style>
