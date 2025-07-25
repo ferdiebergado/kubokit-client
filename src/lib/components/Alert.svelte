@@ -1,10 +1,18 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import { appState } from '../../routes/state.svelte';
 
 	let { message, cls } = $props();
+
+	onMount(() => {
+		setTimeout(() => {
+			appState.msg = '';
+		}, 3000);
+	});
 </script>
 
-<div class="alert {cls}" transition:fade>{message}</div>
+<div class="alert {cls}" in:fade out:fade>{message}</div>
 
 <style>
 	.alert {
