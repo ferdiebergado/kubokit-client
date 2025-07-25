@@ -1,4 +1,5 @@
 <script lang="ts">
+	import logo from '../../../static/inspiration.svg';
 	import { page } from '$app/state';
 	import { routes } from '$lib/routes';
 	import { authState } from '../../routes/state.svelte';
@@ -14,25 +15,36 @@
 	>
 {/snippet}
 
-<nav>
-	<div>
-		{@render navLink('Home', '/')}
-		{#if isLoggedIn}
-			{@render navLink('Users', users)}
-		{/if}
-	</div>
-	<div>
-		{#if isLoggedIn}
-			<span>Logged in as {authState.user!.email}</span>
-			{@render navLink('Logout', logout)}
-		{:else}
-			{@render navLink('Register', register)}
-			{@render navLink('Login', login)}
-		{/if}
-	</div>
-</nav>
+<header>
+	<nav>
+		<div>
+			<a class="logo" href="/">
+				<img src={logo} alt="logo" />
+			</a>
+			{#if isLoggedIn}
+				{@render navLink('Dashboard', 'dashboard')}
+				{@render navLink('Users', users)}
+			{/if}
+		</div>
+		<div>
+			{#if isLoggedIn}
+				<span>Logged in as {authState.user!.email}</span>
+				{@render navLink('Logout', logout)}
+			{:else}
+				{@render navLink('Register', register)}
+				{@render navLink('Login', login)}
+			{/if}
+		</div>
+	</nav>
+</header>
 
 <style>
+	header {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
 	nav {
 		display: flex;
 		justify-content: space-between;
@@ -49,7 +61,7 @@
 		justify-content: center;
 	}
 
-	a {
+	a:not(.logo) {
 		color: black;
 		margin: 0.6rem;
 		padding: 0.75rem 1rem;
@@ -58,5 +70,15 @@
 
 	.active {
 		font-weight: bold;
+	}
+
+	.logo {
+		padding: 1rem;
+		margin-inline: 1rem;
+	}
+
+	.logo img {
+		width: 2.5rem;
+		height: 2rem;
 	}
 </style>
