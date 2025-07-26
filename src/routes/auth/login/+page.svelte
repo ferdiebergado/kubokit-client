@@ -29,9 +29,10 @@
 		try {
 			isSubmitting = true;
 
+			const { email, password } = formData;
 			const res = await api.post(routes.login, false, {
-				email: formData.email,
-				password: formData.password
+				email,
+				password
 			});
 
 			const payload: APIResponse<AuthData, FormErrors> = await res.json();
@@ -54,7 +55,7 @@
 				appState.success = true;
 				if (data) {
 					authClient.setData(data);
-					currentUser.set({ email: formData.email });
+					currentUser.set({ email });
 					isVerified = true;
 					const redirectURL = intendedURL.path;
 					intendedURL.path = '/';

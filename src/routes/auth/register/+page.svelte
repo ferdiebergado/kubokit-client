@@ -28,10 +28,11 @@
 		try {
 			isSubmitting = true;
 
+			const { email, password, passwordConfirm } = formData;
 			const res = await api.post(routes.register, false, {
-				email: formData.email,
-				password: formData.password,
-				password_confirm: formData.passwordConfirm
+				email,
+				password,
+				password_confirm: passwordConfirm
 			});
 
 			const payload = await res.json();
