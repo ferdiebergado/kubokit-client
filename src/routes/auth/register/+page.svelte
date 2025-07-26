@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { api } from '$lib/api';
+	import { api, type APIResponse } from '$lib/api';
 	import { SubmitButton } from '$lib/components';
 	import { routes } from '$lib/routes';
 	import { appState } from '../../state.svelte';
@@ -35,7 +35,7 @@
 				password_confirm: passwordConfirm
 			});
 
-			const payload = await res.json();
+			const payload: APIResponse<undefined, undefined> = await res.json();
 
 			console.log(payload);
 
