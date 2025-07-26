@@ -60,6 +60,6 @@ export const api = {
 	},
 
 	delete(url: string, isAuthorized = false, opts?: RequestOpts) {
-		return apiFetch('DELETE', url, isAuthorized, {}, opts);
+		return apiFetch('DELETE', url, isAuthorized, undefined, opts);
 	}
 };
