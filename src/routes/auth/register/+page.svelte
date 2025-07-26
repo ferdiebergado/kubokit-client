@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { api } from '$lib';
+	import { api } from '$lib/api';
 	import { SubmitButton } from '$lib/components';
 	import { routes } from '$lib/routes';
 	import { appState } from '../../state.svelte';

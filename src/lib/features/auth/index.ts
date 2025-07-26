@@ -1,12 +1,20 @@
-import { type APIResponse } from '$lib';
-import type { routes } from '$lib/routes';
-import type { AuthState } from '../../../routes/state.svelte';
+import { baseURL, redirectTo } from '$lib';
+import type { APIResponse } from '$lib/api';
+import { routes } from '$lib/routes';
+import { writable } from 'svelte/store';
 
 /**
  * Minimal user representation.
  */
 export type User = {
 	email: string;
+};
+
+export const currentUser = writable<User | undefined>();
+export const clearUser = () => currentUser.set(undefined);
+
+export type AuthState = {
+	user?: User;
 };
 
 /**
@@ -30,20 +38,19 @@ export type AuthData = {
  * Context passed to the `AuthClient` constructor to configure behavior.
  */
 export type AuthClientContext = {
-	/** Reference to the original fetch function, used for HTTP requests. */
-	originalFetch: typeof window.fetch;
+	fetch: typeof fetch;
 
 	/** Base URL for the API, used to verify origin. */
 	api: string;
 
 	/** Object mapping route names to their respective paths (e.g., `/login`, `/refresh`). */
-	routes: typeof routes;
+	routes: { login: string; refresh: string };
 
 	/** Redirect function used to navigate to login or other pages. */
 	redirectFn: (path: string) => Promise<void>;
 
-	/** Object containing the current logged in user. */
-	authState: AuthState;
+	/** Function to set currentUser to undefined. */
+	clearUser: () => void;
 };
 
 /**
@@ -51,6 +58,7 @@ export type AuthClientContext = {
  */
 export class AuthClient {
 	readonly #redirectPath: string;
+	#originalFetch: typeof fetch;
 	#data?: AuthData;
 	#renewPromise?: Promise<void>;
 
@@ -60,6 +68,7 @@ export class AuthClient {
 	 */
 	constructor(private readonly context: AuthClientContext) {
 		console.log('Auth client initializing...');
+		this.#originalFetch = context.fetch;
 		const { routes } = context;
 		this.#redirectPath = routes.login;
 	}
@@ -93,7 +102,7 @@ export class AuthClient {
 
 		try {
 			const req = this.#buildRequest(resource, options);
-			return await this.context.originalFetch(req);
+			return await this.#originalFetch(req);
 		} catch (error) {
 			console.error('Authenticated fetch error:', error);
 			throw error;
@@ -113,14 +122,17 @@ export class AuthClient {
 	 */
 	#buildRequest(resource: RequestInfo | URL, options?: RequestInit): Request {
 		const req = new Request(resource, options);
+
 		const { origin } = new URL(req.url);
-		if (origin === this.context.api) {
-			const headers = new Headers(req.headers);
-			const { token_type, access_token } = this.#data!;
-			headers.set('Authorization', `${token_type} ${access_token}`);
-			return new Request(req, { headers });
+		if (origin !== this.context.api) {
+			throw new Error('unknown origin');
 		}
-		throw new Error('unknown origin');
+
+		const headers = new Headers(req.headers);
+		const { token_type, access_token } = this.#data!;
+		headers.set('Authorization', `${token_type} ${access_token}`);
+
+		return new Request(req, { headers });
 	}
 
 	/**
@@ -149,7 +161,7 @@ export class AuthClient {
 		const { token_type, refresh_token } = this.#data!;
 		const { api, routes } = this.context;
 
-		const res = await this.context.originalFetch(api + routes.refresh, {
+		const res = await this.#originalFetch(api + routes.refresh, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -193,7 +205,19 @@ export class AuthClient {
 	 */
 	clearSession(): void {
 		this.#clearData();
-		this.context.authState.user = undefined;
+		this.context.clearUser();
 		console.log('Logged out.');
 	}
 }
+
+const originalFetch = fetch;
+
+const ctx: AuthClientContext = Object.freeze({
+	fetch: originalFetch,
+	api: baseURL,
+	routes,
+	redirectFn: redirectTo,
+	clearUser
+});
+
+export const authClient = new AuthClient(ctx);

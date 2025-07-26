@@ -1,11 +1,13 @@
 import { browser } from '$app/environment';
 import type { LayoutLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
-import { authState, intendedURL } from '../state.svelte';
+import { intendedURL } from '../state.svelte';
 import { routes } from '$lib/routes';
+import { get } from 'svelte/store';
+import { currentUser } from '$lib/features/auth';
 
 export const load = (async ({ url }) => {
-	if (browser && !authState.user) {
+	if (browser && !get(currentUser)) {
 		const currentPath = url.pathname + url.search;
 		intendedURL.path = currentPath;
 		console.warn('Not logged in.');

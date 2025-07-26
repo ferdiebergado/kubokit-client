@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { api, type APIResponse } from '$lib';
-	import type { AuthData } from '$lib/features/auth';
+	import { authClient, currentUser, type AuthData } from '$lib/features/auth';
 	import { SubmitButton } from '$lib/components';
 	import { routes } from '$lib/routes';
-	import { authClient, authState, intendedURL, appState } from '../../state.svelte';
+	import { intendedURL, appState } from '../../state.svelte';
+	import { api, type APIResponse } from '$lib/api';
 
 	type FormData = {
 		email: string;
@@ -54,7 +54,7 @@
 				appState.success = true;
 				if (data) {
 					authClient.setData(data);
-					authState.user = { email: formData.email };
+					currentUser.set({ email: formData.email });
 					isVerified = true;
 					const redirectURL = intendedURL.path;
 					intendedURL.path = '/';

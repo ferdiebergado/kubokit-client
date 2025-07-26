@@ -1,5 +1,5 @@
+import { authClient } from '$lib/features/auth';
 import { routes } from '$lib/routes';
-import { authClient } from '../../state.svelte';
 import type { PageLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 

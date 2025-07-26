@@ -2,11 +2,12 @@
 	import logo from '../../logo.svg';
 	import { page } from '$app/state';
 	import { routes } from '$lib/routes';
-	import { authState } from '../../routes/state.svelte';
+	import { derived } from 'svelte/store';
+	import { currentUser } from '$lib/features/auth';
 
 	const { register, login, logout, users } = routes;
 	let currentPath = $derived(page.url.pathname);
-	let isLoggedIn = $derived(!!authState.user);
+	let isLoggedIn = derived(currentUser, ($user) => !!$user);
 </script>
 
 {#snippet navLink(text: string, path: string)}
@@ -21,14 +22,14 @@
 			<a class="logo-link" href="/">
 				<img src={logo} alt="logo" />
 			</a>
-			{#if isLoggedIn}
+			{#if $isLoggedIn}
 				{@render navLink('Dashboard', 'dashboard')}
 				{@render navLink('Users', users)}
 			{/if}
 		</div>
 		<div>
-			{#if isLoggedIn}
-				<span>Logged in as {authState.user!.email}</span>
+			{#if $isLoggedIn}
+				<span>Logged in as {$currentUser?.email}</span>
 				{@render navLink('Logout', logout)}
 			{:else}
 				{@render navLink('Register', register)}
