@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { authClient, currentUser, type AuthData } from '$lib/features/auth';
+	import { authClient, type AuthData } from '$lib/features/auth';
 	import { SubmitButton } from '$lib/components';
 	import { routes } from '$lib/routes';
-	import { intendedURL, appState } from '../../state.svelte';
+	import { intendedURL, appState, currentUser } from '../../state.svelte';
 	import { api, type APIResponse } from '$lib/api';
 
 	type FormData = {

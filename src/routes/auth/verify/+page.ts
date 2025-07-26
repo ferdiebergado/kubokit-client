@@ -1,10 +1,9 @@
 import { routes } from '$lib/routes';
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import { appState } from '../../state.svelte';
+import { appState, currentUser } from '../../state.svelte';
 import { browser } from '$app/environment';
 import { get } from 'svelte/store';
-import { currentUser } from '$lib/features/auth';
 import { api, type APIResponse } from '$lib/api';
 
 export const load = (async ({ url }) => {

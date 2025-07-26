@@ -1,20 +1,13 @@
 import { baseURL, originalFetch, redirectTo } from '$lib';
 import type { APIResponse } from '$lib/api';
 import { routes } from '$lib/routes';
-import { writable } from 'svelte/store';
+import { clearUser } from '../../../routes/state.svelte';
 
 /**
  * Minimal user representation.
  */
 export type User = {
 	email: string;
-};
-
-export const currentUser = writable<User | undefined>();
-export const clearUser = () => currentUser.set(undefined);
-
-export type AuthState = {
-	user?: User;
 };
 
 /**

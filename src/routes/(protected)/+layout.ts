@@ -1,10 +1,9 @@
 import { browser } from '$app/environment';
 import type { LayoutLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
-import { intendedURL } from '../state.svelte';
+import { currentUser, intendedURL } from '../state.svelte';
 import { routes } from '$lib/routes';
 import { get } from 'svelte/store';
-import { currentUser } from '$lib/features/auth';
 
 export const load = (async ({ url }) => {
 	if (browser && !get(currentUser)) {

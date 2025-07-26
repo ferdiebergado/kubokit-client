@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import { routes } from '$lib/routes';
 	import { derived } from 'svelte/store';
-	import { currentUser } from '$lib/features/auth';
+	import { currentUser } from '../../routes/state.svelte';
 
 	const { register, login, logout, users } = routes;
 	let currentPath = $derived(page.url.pathname);
