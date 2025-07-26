@@ -1,4 +1,4 @@
-import { baseURL, redirectTo } from '$lib';
+import { baseURL, originalFetch, redirectTo } from '$lib';
 import type { APIResponse } from '$lib/api';
 import { routes } from '$lib/routes';
 import { writable } from 'svelte/store';
@@ -68,8 +68,9 @@ export class AuthClient {
 	 */
 	constructor(private readonly context: AuthClientContext) {
 		console.log('Auth client initializing...');
-		this.#originalFetch = context.fetch;
-		const { routes } = context;
+
+		const { fetch, routes } = context;
+		this.#originalFetch = fetch;
 		this.#redirectPath = routes.login;
 	}
 
@@ -181,9 +182,7 @@ export class AuthClient {
 		}
 
 		const { data }: APIResponse<AuthData, undefined> = await res.json();
-		if (data) {
-			this.#data = data;
-		}
+		this.#data = data!;
 	}
 
 	/**
@@ -209,8 +208,6 @@ export class AuthClient {
 		console.log('Logged out.');
 	}
 }
-
-const originalFetch = fetch;
 
 const ctx: AuthClientContext = Object.freeze({
 	fetch: originalFetch,
