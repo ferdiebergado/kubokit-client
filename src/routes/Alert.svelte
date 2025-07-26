@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { appState } from '../../routes/state.svelte';
+	import { appState } from './state.svelte';
 
 	let { message, cls } = $props();
 

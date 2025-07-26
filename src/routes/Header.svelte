@@ -1,9 +1,9 @@
 <script lang="ts">
-	import logo from '../../logo.svg';
+	import logo from '../logo.svg';
 	import { page } from '$app/state';
 	import { routes } from '$lib/routes';
 	import { derived } from 'svelte/store';
-	import { currentUser } from '../../routes/state.svelte';
+	import { currentUser } from './state.svelte';
 
 	const { register, login, logout, users } = routes;
 	let currentPath = $derived(page.url.pathname);
@@ -53,7 +53,7 @@
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 		width: 100%;
 		overflow: hidden;
-		margin-bottom: 3rem;
+		margin-bottom: 0.6rem;
 	}
 
 	nav > div {
