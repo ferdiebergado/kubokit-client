@@ -29,7 +29,7 @@
 		</div>
 		<div>
 			{#if $isLoggedIn}
-				<span>Logged in as {$currentUser?.email}</span>
+				<span>Logged in as {$currentUser!.email}</span>
 				{@render navLink('Logout', logout)}
 			{:else}
 				{@render navLink('Register', register)}
