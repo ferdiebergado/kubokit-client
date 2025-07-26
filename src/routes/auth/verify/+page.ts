@@ -1,32 +1,26 @@
 import { routes } from '$lib/routes';
-import { redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import { appState, currentUser } from '../../state.svelte';
+import { currentUser } from '../../state.svelte';
 import { browser } from '$app/environment';
 import { get } from 'svelte/store';
-import { api, type APIResponse } from '$lib/api';
+import { api } from '$lib/api';
 
 export const load = (async ({ url }) => {
 	if (browser) {
 		if (!get(currentUser)) {
 			const token = url.searchParams.get('token');
 			if (!token) {
-				appState.msg = 'Invalid verification link.';
-				appState.success = false;
-				throw redirect(303, routes.login);
+				error(404, 'Not found');
 			}
 
 			const body = { token };
 			const res = await api.post(routes.verify, false, body);
-			const { message }: APIResponse<undefined, undefined> = await res.json();
-			appState.msg = message;
 
 			if (!res.ok) {
-				appState.success = false;
-				throw redirect(303, routes.login);
+				error(404, 'Not found');
 			}
 
-			appState.success = true;
 			throw redirect(303, routes.login);
 		}
 		throw redirect(303, '/');
