@@ -61,6 +61,11 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Register</title>
+	<meta name="description" content="User registration" />
+</svelte:head>
+
 <div class="form-wrapper">
 	<h2>Register</h2>
 

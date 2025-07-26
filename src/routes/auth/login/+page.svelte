@@ -88,6 +88,11 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Login</title>
+	<meta name="description" content="User login" />
+</svelte:head>
+
 {#if !isVerified}
 	<p class="info">
 		Please check your email or <button type="button" class="btn-resend" onclick={resendVerification}
@@ -136,6 +141,7 @@
 		border-radius: 8px;
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 		background-color: #fff;
+		margin-top: 1rem;
 	}
 
 	h2 {
